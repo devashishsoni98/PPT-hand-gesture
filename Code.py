@@ -1,5 +1,3 @@
-# This app will use your built-in webcam to control your slides presentation.
-# For a one-handed presentation, use Gesture 1 (thumbs up) to go to the previous slide and Gesture 2 (whole hand pointing up) to go to the next slide.
 
 import win32com.client
 from cvzone.HandTrackingModule import HandDetector
@@ -9,7 +7,7 @@ import numpy as np
 import aspose.slides as slides
 import aspose.pydrawing as drawing
 Application = win32com.client.Dispatch("PowerPoint.Application" )
-Presentation = Application.Presentations.Open("C:\\Users\Zouaoui\Documents\programmation\python\zani.pptx")
+Presentation = Application.Presentations.Open("C:\\Users\\devas\\OneDrive\\Desktop\\Presentations\\Dcoder.pptx")
 print(Presentation.Name)
 Presentation.SlideShowSettings.Run()
 # Parameters
