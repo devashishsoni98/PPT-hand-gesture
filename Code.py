@@ -1,82 +1,109 @@
-
+import cv2
 import win32com.client
 from cvzone.HandTrackingModule import HandDetector
-import cv2
 import os
-import numpy as np
-import aspose.slides as slides
-import aspose.pydrawing as drawing
-Application = win32com.client.Dispatch("PowerPoint.Application" )
-Presentation = Application.Presentations.Open("C:\\Users\\devas\\OneDrive\\Desktop\\Presentations\\Dcoder.pptx")
-print(Presentation.Name)
-Presentation.SlideShowSettings.Run()
-# Parameters
-width, height = 900, 720
-gestureThreshold = 300
-# Camera Setup
-cap = cv2.VideoCapture(0)
-cap.set(3, width)
-cap.set(4, height) 
-# Hand Detector
-detectorHand = HandDetector(detectionCon=0.8, maxHands=1)
-# Variables
-imgList = []
-delay = 30
-buttonPressed = False
-counter = 0
-drawMode = False
-imgNumber = 20
-delayCounter = 0
-annotations = [[]]
-annotationNumber = -1
-annotationStart = False
-while True:
-    # Get image frame
-    success, img = cap.read()
-    # Find the hand and its landmarks
-    hands, img = detectorHand.findHands(img)  # with draw
-    if hands and buttonPressed is False:  # If hand is detected
-        hand = hands[0]
-        cx, cy = hand["center"]
-        lmList = hand["lmList"]  # List of 21 Landmark points
-        fingers = detectorHand.fingersUp(hand)  # List of which fingers are up
-        if cy <= gestureThreshold:  # If hand is at the height of the face
-            if fingers == [1, 1, 1, 1, 1]:
-                print("Next")
-                buttonPressed = True
-                if imgNumber > 0:
-                    Presentation.SlideShowWindow.View.Next()
-                    imgNumber -= 1
-                    annotations = [[]]
-                    annotationNumber = -1
-                    annotationStart = False
-            if fingers == [1, 0, 0, 0, 0]:
-                print("Previous")
-                buttonPressed = True
-                if imgNumber >0 :
-                    Presentation.SlideShowWindow.View.Previous()
-                    imgNumber += 1
-                    annotations = [[]]
-                    annotationNumber = -1
-                    annotationStart = False
- 
-    else:
-        annotationStart = False
- 
-    if buttonPressed:
-        counter += 1
-        if counter > delay:
-            counter = 0
-            buttonPressed = False
- 
-    for i, annotation in enumerate(annotations):
-        for j in range(len(annotation)):
-            if j != 0:
-                cv2.line(imgCurrent, annotation[j - 1], annotation[j], (0, 0, 200), 12)
- 
-    cv2.imshow("Image", img)
- 
-    key = cv2.waitKey(1)
-    if key == ord('q'):
-        break
 
+# =============================== #
+#         CONFIGURATIONS         #
+# =============================== #
+
+PPT_PATH = "C:\\Users\\devas\\OneDrive\\Desktop\\Presentations\\Dcoder.pptx"
+GESTURE_THRESHOLD = 300
+CAM_WIDTH, CAM_HEIGHT = 900, 720
+DETECTION_CONFIDENCE = 0.8
+MAX_HANDS = 1
+GESTURE_DELAY = 30
+
+# =============================== #
+#         MAIN FUNCTION           #
+# =============================== #
+
+def main():
+    # Open PowerPoint
+    try:
+        app = win32com.client.Dispatch("PowerPoint.Application")
+        presentation = app.Presentations.Open(PPT_PATH)
+        presentation.SlideShowSettings.Run()
+        print(f"Presentation Started: {presentation.Name}")
+    except Exception as e:
+        print("Failed to open PowerPoint:", e)
+        return
+
+    # Initialize camera
+    cap = cv2.VideoCapture(0)
+    cap.set(3, CAM_WIDTH)
+    cap.set(4, CAM_HEIGHT)
+
+    # Hand detector
+    detector = HandDetector(detectionCon=DETECTION_CONFIDENCE, maxHands=MAX_HANDS)
+
+    # Variables
+    buttonPressed = False
+    delayCounter = 0
+    slideCount = 20  # Number of slides (dummy limit)
+    annotations = [[]]
+    annotationNumber = -1
+    annotationStart = False
+
+    while True:
+        success, img = cap.read()
+        if not success:
+            break
+
+        hands, img = detector.findHands(img)
+
+        if hands and not buttonPressed:
+            hand = hands[0]
+            cx, cy = hand["center"]
+            fingers = detector.fingersUp(hand)
+
+            # Gesture zone
+            if cy <= GESTURE_THRESHOLD:
+                if fingers == [1, 1, 1, 1, 1]:
+                    print("Next Slide")
+                    presentation.SlideShowWindow.View.Next()
+                    buttonPressed = True
+                    slideCount = max(slideCount - 1, 0)
+                    annotations = [[]]
+                    annotationNumber = -1
+                    annotationStart = False
+
+                elif fingers == [1, 0, 0, 0, 0]:
+                    print("Previous Slide")
+                    presentation.SlideShowWindow.View.Previous()
+                    buttonPressed = True
+                    slideCount += 1
+                    annotations = [[]]
+                    annotationNumber = -1
+                    annotationStart = False
+
+        # Delay logic
+        if buttonPressed:
+            delayCounter += 1
+            if delayCounter > GESTURE_DELAY:
+                delayCounter = 0
+                buttonPressed = False
+
+        # Drawing annotations (placeholder, future feature)
+        for annotation in annotations:
+            for j in range(1, len(annotation)):
+                cv2.line(img, annotation[j - 1], annotation[j], (0, 0, 255), 12)
+
+        # Display image
+        cv2.imshow("Gesture Controlled PPT", img)
+
+        # Exit on 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    presentation.SlideShowWindow.View.Exit()
+    print("Presentation ended.")
+
+# =============================== #
+#            EXECUTE              #
+# =============================== #
+
+if __name__ == "__main__":
+    main()
