@@ -1,8 +1,5 @@
 opencv-contrib-python
 numpy
-Hand-Tracking-Module
-Mediapipe
+mediapipe
 pywin32
 cvzone
-aspose.slides 
-freeze

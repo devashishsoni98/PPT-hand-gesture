@@ -1,3 +1,5 @@
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 import cv2
 import win32com.client
 from cvzone.HandTrackingModule import HandDetector
@@ -7,7 +9,6 @@ import os
 #         CONFIGURATIONS         #
 # =============================== #
 
-PPT_PATH = "C:\\Users\\devas\\OneDrive\\Desktop\\Presentations\\Dcoder.pptx"
 GESTURE_THRESHOLD = 300
 CAM_WIDTH, CAM_HEIGHT = 900, 720
 DETECTION_CONFIDENCE = 0.8
@@ -21,8 +22,15 @@ GESTURE_DELAY = 30
 def main():
     # Open PowerPoint
     try:
+        # File picker for PowerPoint
+        Tk().withdraw()  # Hide root window
+        ppt_path = askopenfilename(filetypes=[("PowerPoint Files", "*.pptx")], title="Select your PPT")
+
+        if not ppt_path:
+            print("No presentation selected. Exiting.")
+            return
         app = win32com.client.Dispatch("PowerPoint.Application")
-        presentation = app.Presentations.Open(PPT_PATH)
+        presentation = app.Presentations.Open(ppt_path)
         presentation.SlideShowSettings.Run()
         print(f"Presentation Started: {presentation.Name}")
     except Exception as e:

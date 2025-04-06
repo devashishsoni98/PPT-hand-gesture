@@ -1,4 +1,23 @@
-/Code.py:Zone.Identifier
-/README.md:Zone.Identifier
-/Thumbnail.png:Zone.Identifier
-/zani.pptx:Zone.Identifier
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+
+# macOS / Windows system files
+.DS_Store
+Thumbs.db
+
+# PowerPoint files (optional if you don’t want to track them)
+*.pptx
+
+# Zone.Identifier metadata (Windows file metadata)
+*.Zone.Identifier
+
+# IDE-specific
+.vscode/
+.idea/
+*.swp
